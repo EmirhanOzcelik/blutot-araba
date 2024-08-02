@@ -22,16 +22,16 @@ const byte hassasiyet_adr = 5; // .
 const byte guncelleme_ms_adr = 6;// .
 
 unsigned long gecen_zaman = 0;
-uint16_t geri_kacma_ms = 1000; //engel görünce geriye gitme süresi
+uint16_t geri_kacma_ms = 300; //engel görünce geriye gitme süresi
 uint16_t guncelleme_ms = 6;  
 bool oto_sag = false;
-byte oto_geri_sag_hiz = 180;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
+byte oto_geri_sag_hiz = 250;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
 byte oto_mod_sayac = 0;
 byte komut_sayac = 0;
 
 byte hiz_sol = 0;
 byte hiz_sag = 0;
-long hassasiyet = 0.60;// ileri sag-sol ve geri sag-sol dönüşlerinde keskinlik ayarı
+long hassasiyet = 0.75;// ileri sag-sol ve geri sag-sol dönüşlerinde keskinlik ayarı
 
 void setup () 
 {
@@ -121,6 +121,7 @@ if(oto_mod == 0)
         if(oto_mod == 0){oto_mod = 1;}
         else{oto_mod = 0;}
         komut_sayac++;
+        dur();
        }
        else if(veri == 'H')
        {
@@ -152,6 +153,7 @@ if(oto_mod == 0)
         if(oto_mod == 0){oto_mod = 1;}
         else{oto_mod = 0;}
         komut_sayac++;
+        dur();
        }
     }
     else
@@ -252,11 +254,11 @@ return mesafe;
 void oto_hareket()
 {
   byte k = olcum();
-  if(k < min_aralik)
+  if(k <= min_aralik)
   {
     oto_sag = true;
   }
-  else if(k > min_aralik && !oto_sag)
+  else 
   {
     uint16_t a = (k-min_aralik)*50 + 50;
     if(a > 255){hiz_sag = map(a,0,a,0,255); hiz_sol = hiz_sag;}else{hiz_sol = a; hiz_sag = hiz_sol;}
@@ -270,16 +272,12 @@ void oto_hareket_timer()
       if(oto_sag)
       {
         hiz_yaz(hiz_sol,hiz_sag);
-        oto_mod_sayac++;
         byte k = olcum();
         hiz_sag = oto_geri_sag_hiz;
         hiz_sol = oto_geri_sag_hiz;
-        geri_sag();
-        if(k < 1,2*min_aralik)
-        {
+        geri_sag();       
+          oto_mod_sayac++;
         if(oto_mod_sayac*guncelleme_ms > 3*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
-        }
-        else{dur(); oto_mod_sayac = 0; oto_sag = false;}
       }
     }
 }
