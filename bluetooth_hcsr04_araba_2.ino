@@ -261,8 +261,8 @@ void oto_hareket()
   else 
   {
     oto_mod_sayac=0;
-    uint16_t a = (k-min_aralik)*50 + 50;
-    if(a > 255){hiz_sag = map(a,0,a,0,255); hiz_sol = hiz_sag;}else{hiz_sol = a; hiz_sag = hiz_sol;}
+    oto_sag = false;
+    hiz_sol = oto_geri_sag_hiz; hiz_sag = hiz_sol;
     ileri();
   }
 }
@@ -278,7 +278,7 @@ void oto_hareket_timer()
         hiz_sol = oto_geri_sag_hiz;
         geri_sag();       
           oto_mod_sayac++;
-        if(oto_mod_sayac*guncelleme_ms > 3*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
+        if(oto_mod_sayac*guncelleme_ms > 5*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
       }
     }
 }
