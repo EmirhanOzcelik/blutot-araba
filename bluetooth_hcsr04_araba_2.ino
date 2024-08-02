@@ -112,7 +112,7 @@ void loop ()
        {
         geri_sol();
        }
-       
+       */
         if(veri == 'M')
        {
         if(oto_mod == 0){oto_mod = 1;}
@@ -131,11 +131,7 @@ void loop ()
         test_mod = !test_mod;
         komut_sayac++;
        }
-        else if(oto_mod == 1)
-        {
-         bellek_degisim(veri);
-        }
-      */
+      
     } 
   }
   else
