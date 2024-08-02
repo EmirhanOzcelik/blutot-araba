@@ -52,10 +52,12 @@ void loop ()
   if(millis() - guncelleme_ms > gecen_zaman)
   {
    gecen_zaman = millis();
-   //oto_hareket_timer();
+   oto_hareket_timer();
    komut_sayac = 0;
   }
 
+if(oto_mod == 0)
+{
   if(Serial.available() && komut_sayac < 1)
   {
     char veri = Serial.read();
@@ -113,6 +115,7 @@ void loop ()
         geri_sol();
        }
        */
+       
         if(veri == 'M')
        {
         if(oto_mod == 0){oto_mod = 1;}
@@ -131,14 +134,29 @@ void loop ()
         test_mod = !test_mod;
         komut_sayac++;
        }
+        else if(oto_mod == 1)
+        {
+         bellek_degisim(veri);
+        }
       
     } 
   }
+}
   else
   {
-    if(oto_mod == 1)
+    if(Serial.available())
     {
-    oto_hareket();      
+      char veri = Serial.read();
+       if(veri == 'M')
+       {
+        if(oto_mod == 0){oto_mod = 1;}
+        else{oto_mod = 0;}
+        komut_sayac++;
+       }
+    }
+    else
+    {
+    oto_hareket();       
     }
   }
 }
@@ -249,9 +267,9 @@ void oto_hareket_timer()
 {
    if(oto_mod)
     {
-      hiz_yaz(hiz_sol,hiz_sag);
       if(oto_sag)
       {
+        hiz_yaz(hiz_sol,hiz_sag);
         oto_mod_sayac++;
         byte k = olcum();
         hiz_sag = oto_geri_sag_hiz;
