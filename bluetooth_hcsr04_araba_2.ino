@@ -8,7 +8,7 @@ const byte a2 = 5;
 const byte b1 = 6;
 const byte b2 = 9;
 
-byte min_aralik = 6; //x cm kala duvardan geri döner
+byte min_aralik = 4; //x cm kala duvardan geri döner
 
 byte oto_mod = 0;
 
@@ -58,7 +58,7 @@ void loop ()
 
 if(oto_mod == 0)
 {
-  if(Serial.available() && komut_sayac < 1)
+  if(Serial.available() > 0 && komut_sayac < 1)
   {
     char veri = Serial.read();
      if(veri == 'S')
@@ -118,7 +118,12 @@ if(oto_mod == 0)
        
         if(veri == 'M')
        {
-        if(oto_mod == 0){oto_mod = 1;}
+        if(oto_mod == 0)
+        {
+          hiz_sag = oto_geri_sag_hiz;
+          hiz_sol = oto_geri_sag_hiz;  
+          oto_mod = 1;
+        }
         else{oto_mod = 0;}
         komut_sayac++;
         dur();
@@ -150,7 +155,12 @@ if(oto_mod == 0)
       char veri = Serial.read();
        if(veri == 'M')
        {
-        if(oto_mod == 0){oto_mod = 1;}
+        if(oto_mod == 0)
+        {
+        oto_mod = 1;         
+        hiz_sag = oto_geri_sag_hiz;
+        hiz_sol = oto_geri_sag_hiz;  
+        }
         else{oto_mod = 0;}
         komut_sayac++;
         dur();
@@ -254,15 +264,14 @@ return mesafe;
 void oto_hareket()
 {
   byte k = olcum();
-  if(k <= min_aralik)
+  if(k < min_aralik)
   {
     oto_sag = true;
+    geri_sag();
   }
   else 
   {
-    oto_mod_sayac=0;
     oto_sag = false;
-    hiz_sol = oto_geri_sag_hiz; hiz_sag = hiz_sol;
     ileri();
   }
 }
@@ -272,14 +281,10 @@ void oto_hareket_timer()
     {
       if(oto_sag)
       {
-        hiz_yaz(hiz_sol,hiz_sag);
-        byte k = olcum();
-        hiz_sag = oto_geri_sag_hiz;
-        hiz_sol = oto_geri_sag_hiz;
-        geri_sag();       
-          oto_mod_sayac++;
-        if(oto_mod_sayac*guncelleme_ms > 5*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
-      }
+        hiz_yaz(hiz_sol,hiz_sag);   
+        oto_mod_sayac++;
+        if(oto_mod_sayac*guncelleme_ms > 3*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
+      }else{oto_mod_sayac = 0;}
     }
 }
 
