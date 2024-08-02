@@ -12,7 +12,7 @@ byte min_aralik = 6; //x cm kala duvardan geri döner
 
 byte oto_mod = 0;
 
-bool test_mod = false;
+bool test_mod = true;
 
 const byte oto_mod_adr = 1; // .
 const byte min_aralik_adr = 2; // .
@@ -23,12 +23,11 @@ const byte guncelleme_ms_adr = 6;// .
 
 unsigned long gecen_zaman = 0;
 uint16_t geri_kacma_ms = 1000; //engel görünce geriye gitme süresi
-uint16_t guncelleme_ms = 20;  
+uint16_t guncelleme_ms = 10;  
 bool oto_sag = false;
 byte oto_geri_sag_hiz = 180;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
 byte oto_mod_sayac = 0;
 
-char veri;
 byte hiz_sol = 0;
 byte hiz_sag = 0;
 long hassasiyet = 0.60;// ileri sag-sol ve geri sag-sol dönüşlerinde keskinlik ayarı
@@ -48,89 +47,83 @@ Serial.println("Arac Baslatildi");
 }
 void loop () 
 {
-  if(millis() - guncelleme_ms > gecen_zaman)
-  {
-    gecen_zaman = millis();
-   oto_hareket_timer();
-  }
+
+
   if(Serial.available())
   {
-    veri = Serial.read();
-    if(veri == 'H')
+    char veri = Serial.read();
+     if(veri == 'S')
+     {
+       dur();
+     }
+    else
     {
-      hiz_sag = Serial.parseInt();
-      hiz_sol = hiz_sag;
-      hiz_yaz(hiz_sol,hiz_sag);
-    }
-    else if(veri == 'S')
-    {
-      dur();
-    }
-    else if(veri == 'F')
-    {
-      ileri();
-    }
-    else if(veri == 'B')
-    {
-      geri();
-    }
-    else if(veri == 'K')
-    {
-      ileri_sag();
-    }
-    else if(veri == 'N')
-    {
-      ileri_sol();
-    }
-    else if(veri == 'R')
-    {
-      sag();
-    }
-    else if(veri == 'L')
-    {
-      sol();
-    }
-    else if(veri == 'P')
-    {
-      geri_sag();
-    }
-    else if(veri == 'O')
-    {
-      geri_sol();
-    }
-    else if(veri == 'M')
-    {
-      if(oto_mod == 0){oto_mod = 1;}
-      else{oto_mod = 0;}
-      EEPROM.write(oto_mod_adr,oto_mod);
-    }
-    else if(veri == 'A')
-    {
-      uint16_t aa = Serial.parseInt();
-      ayar1(aa); //0-10=aralik , 11-15=hassasiyet , 500-? = geri kaçma ms
-    }
-    else if(veri == 'W')
-    {
-      uint16_t aa = Serial.parseInt();
-      ayar2(aa); //0-255 = oto geri sag hiz
-    }
-    else if(veri == 'Q')
-    {
-      uint16_t aa = Serial.parseInt();
-      ayar3(aa); //10-100 = guncelleme_ms (10 ve katları)
-    }
-    else if(veri == 'G')
-    {
-      ayar_sifirla();
-    }
+       if(veri == 'F')
+       {
+        ileri();
+       }
+       else if(veri == 'B')
+       {
+         geri();
+       }
+       else if(veri == 'R')
+       {
+        sag();
+       }
+       else if(veri == 'L')
+       {
+         sol();
+       }
+       /*
+      else if(veri == 'K')
+       {
+        ileri_sag();
+       }
+      else if(veri == 'N')
+       {
+        ileri_sol();
+       }
+       else if(veri == 'P')
+       {
+         geri_sag();
+       }
+       else if(veri == 'O')
+       {
+        geri_sol();
+       }
+       */
+       else if(veri == 'M')
+       {
+        if(oto_mod == 0){oto_mod = 1;}
+        else{oto_mod = 0;}
+       }
+       else if(veri == 'H')
+       {
+        hiz_sag = Serial.parseInt();
+        hiz_sol = hiz_sag;
+        hiz_yaz(hiz_sol,hiz_sag);
+       }
+       else if(veri == 'E')
+       {
+        test_mod = !test_mod;
+       }
+        else if(oto_mod == 1)
+        {
+         bellek_degisim(veri);
+        }
+    } 
   }
-  else if(oto_mod == 1)
+  else
   {
-    oto_hareket();
+    if(oto_mod == 1)
+    {
+    oto_hareket();      
+    }
   }
 }
 void dur()
 {
+  test("dur");
   digitalWrite(a1,LOW);
   digitalWrite(a2,LOW);
   digitalWrite(b1,LOW);
@@ -138,7 +131,8 @@ void dur()
 }
 void ileri()
 {
-  
+    test("ileri");
+
   analogWrite(a1,hiz_sag);
   analogWrite(a2,0);
   analogWrite(b1,hiz_sol);
@@ -146,6 +140,8 @@ void ileri()
 }
 void geri()
 {
+    test("geri");
+
   analogWrite(a1,0);
   analogWrite(a2,hiz_sag);
   analogWrite(b1,0);
@@ -169,6 +165,8 @@ void ileri_sag()
 }
 void sag()
 {
+    test("sag");
+
   analogWrite(a1,hiz_sag);
   analogWrite(a2,0);
   analogWrite(b1,0);
@@ -176,6 +174,8 @@ void sag()
 }
 void sol()
 {
+    test("sol");
+
   analogWrite(a1,0);
   analogWrite(a2,hiz_sag);
   analogWrite(b1,hiz_sol);
@@ -212,6 +212,11 @@ return mesafe;
 }
 void oto_hareket()
 {
+  if(millis() - guncelleme_ms > gecen_zaman)
+  {
+    gecen_zaman = millis();
+   oto_hareket_timer();
+  }
   byte k = olcum();
   if(k < min_aralik)
   {
@@ -350,4 +355,26 @@ void hiz_yaz(byte l,byte r)
   Serial.print("*Y" + String(l) + "*");
   Serial.print("*Z" + String(r) + "*");
   Serial.println("");
+}
+void bellek_degisim(char veri)
+{
+   if(veri == 'A')
+    {
+      uint16_t aa = Serial.parseInt();
+      ayar1(aa); //0-10=aralik , 11-15=hassasiyet , 500-? = geri kaçma ms
+    }
+    else if(veri == 'W')
+    {
+      uint16_t aa = Serial.parseInt();
+      ayar2(aa); //0-255 = oto geri sag hiz
+    }
+    else if(veri == 'Q')
+    {
+      uint16_t aa = Serial.parseInt();
+      ayar3(aa); //10-100 = guncelleme_ms (10 ve katları)
+    }
+    else if(veri == 'G')
+    {
+      ayar_sifirla();
+    }
 }
