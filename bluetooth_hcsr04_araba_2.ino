@@ -12,7 +12,7 @@ byte min_aralik = 6; //x cm kala duvardan geri döner
 
 byte oto_mod = 0;
 
-bool test_mod = true;
+bool test_mod = false;
 
 const byte oto_mod_adr = 1; // .
 const byte min_aralik_adr = 2; // .
@@ -23,10 +23,11 @@ const byte guncelleme_ms_adr = 6;// .
 
 unsigned long gecen_zaman = 0;
 uint16_t geri_kacma_ms = 1000; //engel görünce geriye gitme süresi
-uint16_t guncelleme_ms = 10;  
+uint16_t guncelleme_ms = 6;  
 bool oto_sag = false;
 byte oto_geri_sag_hiz = 180;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
 byte oto_mod_sayac = 0;
+byte komut_sayac = 0;
 
 byte hiz_sol = 0;
 byte hiz_sag = 0;
@@ -42,38 +43,58 @@ pinMode(a2, OUTPUT);
 pinMode(b1, OUTPUT);
 pinMode(b2, OUTPUT);
 Serial.println("Ayarlar Yukleniyor...");
-ayar_ver();
+//ayar_ver();
 Serial.println("Arac Baslatildi");
 }
 void loop () 
 {
 
+  if(millis() - guncelleme_ms > gecen_zaman)
+  {
+   gecen_zaman = millis();
+   //oto_hareket_timer();
+   komut_sayac = 0;
+  }
 
-  if(Serial.available())
+  if(Serial.available() && komut_sayac < 1)
   {
     char veri = Serial.read();
      if(veri == 'S')
      {
        dur();
+       komut_sayac++;
      }
     else
     {
        if(veri == 'F')
        {
         ileri();
+        komut_sayac++;
        }
-       else if(veri == 'B')
+       else
        {
-         geri();
+        if(veri == 'B')
+        {
+          geri();
+          komut_sayac++;
+        }
        }
-       else if(veri == 'R')
-       {
-        sag();
-       }
-       else if(veri == 'L')
-       {
-         sol();
-       }
+
+          if(veri == 'R')
+         {
+          sag();
+          komut_sayac++;
+          }
+          else
+          {
+             if(veri == 'L')
+            {
+              sol();
+              komut_sayac++;
+            }
+          }
+        
+
        /*
       else if(veri == 'K')
        {
@@ -91,26 +112,30 @@ void loop ()
        {
         geri_sol();
        }
-       */
-       else if(veri == 'M')
+       
+        if(veri == 'M')
        {
         if(oto_mod == 0){oto_mod = 1;}
         else{oto_mod = 0;}
+        komut_sayac++;
        }
        else if(veri == 'H')
        {
         hiz_sag = Serial.parseInt();
         hiz_sol = hiz_sag;
         hiz_yaz(hiz_sol,hiz_sag);
+        komut_sayac++;
        }
        else if(veri == 'E')
        {
         test_mod = !test_mod;
+        komut_sayac++;
        }
         else if(oto_mod == 1)
         {
          bellek_degisim(veri);
         }
+      */
     } 
   }
   else
@@ -212,11 +237,6 @@ return mesafe;
 }
 void oto_hareket()
 {
-  if(millis() - guncelleme_ms > gecen_zaman)
-  {
-    gecen_zaman = millis();
-   oto_hareket_timer();
-  }
   byte k = olcum();
   if(k < min_aralik)
   {
@@ -362,19 +382,23 @@ void bellek_degisim(char veri)
     {
       uint16_t aa = Serial.parseInt();
       ayar1(aa); //0-10=aralik , 11-15=hassasiyet , 500-? = geri kaçma ms
+      komut_sayac++;
     }
     else if(veri == 'W')
     {
       uint16_t aa = Serial.parseInt();
       ayar2(aa); //0-255 = oto geri sag hiz
+      komut_sayac++;
     }
     else if(veri == 'Q')
     {
       uint16_t aa = Serial.parseInt();
       ayar3(aa); //10-100 = guncelleme_ms (10 ve katları)
+      komut_sayac++;
     }
     else if(veri == 'G')
     {
       ayar_sifirla();
+      komut_sayac++;
     }
 }
