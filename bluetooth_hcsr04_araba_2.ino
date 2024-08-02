@@ -23,9 +23,9 @@ const byte guncelleme_ms_adr = 6;// .
 
 unsigned long gecen_zaman = 0;
 uint16_t geri_kacma_ms = 1000; //engel görünce geriye gitme süresi
-uint16_t guncelleme_ms = 50;  
+uint16_t guncelleme_ms = 20;  
 bool oto_sag = false;
- byte oto_geri_sag_hiz = 220;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
+byte oto_geri_sag_hiz = 180;//araç engelden kaçarken sağ arkaya doğru giderken kullanılacak hız (0-255 arası ayarlayın) 
 byte oto_mod_sayac = 0;
 
 char veri;
@@ -44,32 +44,16 @@ pinMode(b1, OUTPUT);
 pinMode(b2, OUTPUT);
 Serial.println("Ayarlar Yukleniyor...");
 ayar_ver();
-Serial.println("Arac Baslatiliyor...");
+Serial.println("Arac Baslatildi");
 }
 void loop () 
 {
   if(millis() - guncelleme_ms > gecen_zaman)
   {
     gecen_zaman = millis();
-    if(oto_mod)
-    {
-            hiz_yaz(hiz_sol,hiz_sag);
-      oto_mod_sayac++;
-      if(oto_sag)
-      {
-        byte k = olcum();
-        geri_sag();
-        hiz_sag = oto_geri_sag_hiz;
-        hiz_sol = oto_geri_sag_hiz;
-        if(k <= 1,6*min_aralik)
-        {
-        if(oto_mod_sayac*guncelleme_ms >= geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false;}
-        else{dur(); oto_mod_sayac = 0; oto_sag = false;}
-        }
-      }
-    }
+   oto_hareket_timer();
   }
-  if(Serial.available() && oto_mod == 0)
+  if(Serial.available())
   {
     veri = Serial.read();
     if(veri == 'H')
@@ -77,6 +61,10 @@ void loop ()
       hiz_sag = Serial.parseInt();
       hiz_sol = hiz_sag;
       hiz_yaz(hiz_sol,hiz_sag);
+    }
+    else if(veri == 'S')
+    {
+      dur();
     }
     else if(veri == 'F')
     {
@@ -138,29 +126,15 @@ void loop ()
   }
   else if(oto_mod == 1)
   {
-    if(Serial.available())
-    {
-      char veri = Serial.read();
-      if(veri == 'M')
-      {
-       if(oto_mod == 0){oto_mod = 1;}
-       else{oto_mod = 0;}
-       EEPROM.write(oto_mod_adr,oto_mod);
-      }      
-    }
     oto_hareket();
-  }
-  else if(!Serial.available() && !oto_mod)
-  {
-    dur();
   }
 }
 void dur()
 {
-  analogWrite(a1,0);
-  analogWrite(a2,0);
-  analogWrite(b1,0);
-  analogWrite(b2,0);
+  digitalWrite(a1,LOW);
+  digitalWrite(a2,LOW);
+  digitalWrite(b1,LOW);
+  digitalWrite(b2,LOW);
 }
 void ileri()
 {
@@ -239,16 +213,36 @@ return mesafe;
 void oto_hareket()
 {
   byte k = olcum();
-  if(k <= min_aralik)
+  if(k < min_aralik)
   {
     oto_sag = true;
   }
-  else if(k >= min_aralik && !oto_sag)
+  else if(k > min_aralik && !oto_sag)
   {
     uint16_t a = (k-min_aralik)*50 + 50;
     if(a > 255){hiz_sag = map(a,0,a,0,255); hiz_sol = hiz_sag;}else{hiz_sol = a; hiz_sag = hiz_sol;}
     ileri();
   }
+}
+void oto_hareket_timer()
+{
+   if(oto_mod)
+    {
+      hiz_yaz(hiz_sol,hiz_sag);
+      if(oto_sag)
+      {
+        oto_mod_sayac++;
+        byte k = olcum();
+        hiz_sag = oto_geri_sag_hiz;
+        hiz_sol = oto_geri_sag_hiz;
+        geri_sag();
+        if(k < 1,2*min_aralik)
+        {
+        if(oto_mod_sayac*guncelleme_ms > 3*geri_kacma_ms){dur(); oto_mod_sayac = 0; oto_sag = false; oto_mod = false; }
+        }
+        else{dur(); oto_mod_sayac = 0; oto_sag = false;}
+      }
+    }
 }
 
 void ayar_ver()
@@ -347,7 +341,7 @@ void ayar_sifirla()
   EEPROM.write(oto_mod_adr, 0);
   EEPROM.write(min_aralik_adr, 6);
   EEPROM.write(geri_kacma_ms_adr, 60);
-  EEPROM.write(oto_geri_sag_hiz_adr, 220);
+  EEPROM.write(oto_geri_sag_hiz_adr, 180);
   EEPROM.write(hassasiyet_adr, 2);
   EEPROM.write(guncelleme_ms_adr, 50);
 }
@@ -355,4 +349,5 @@ void hiz_yaz(byte l,byte r)
 {
   Serial.print("*Y" + String(l) + "*");
   Serial.print("*Z" + String(r) + "*");
+  Serial.println("");
 }
