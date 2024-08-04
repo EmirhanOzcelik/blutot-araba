@@ -3,38 +3,37 @@
 #include "avr/wdt.h"
 uint16_t guncelleme_ms = 25; //makine hızı için fabrika ayarı
 double hassasiyet = 0.75; //ileri sag-sol ve geri sag-sol dönüşlerinde keskinlik fabrika ayarı
-byte test_izin = 1; //test modu için fabrika ayarı
-byte oto_mod = 0; //sensör modu
-const byte guncelleme_ms_adr = 1;
-const byte hassasiyet_adr = 2;
-const byte test_izin_adr = 3;
-const byte oto_mod_adr = 4;
-const byte delay_sure1 = 25;
-const byte trigPin = 4;
-const byte echoPin = 2;
-const byte a1 = 3;
-const byte a2 = 5;
-const byte b1 = 6;
-const byte b2 = 9;
+uint16_t test_izin = 1; //test modu için fabrika ayarı
+uint16_t oto_mod = 0; //sensör modu
+const uint16_t guncelleme_ms_adr = 1;
+const uint16_t hassasiyet_adr = 2;
+const uint16_t test_izin_adr = 3;
+const uint16_t oto_mod_adr = 4;
+const uint16_t delay_sure1 = 25;
+const uint16_t trigPin = 4;
+const uint16_t echoPin = 2;
+const uint16_t a1 = 3;
+const uint16_t a2 = 5;
+const uint16_t b1 = 6;
+const uint16_t b2 = 9;
 bool baglanti = true;
-byte afk_sayac = 0;
-byte seri_kapa_sayac = 0;
+uint16_t afk_sayac = 0;
+uint16_t seri_kapa_sayac = 0;
 unsigned long gecen_zaman = 0;
-byte hiz = 0;
-byte hiz_sol = 0;
-byte hiz_sag = 0;
-byte ks [] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const byte ks_say = 24;
+uint16_t hiz = 0;
+uint16_t hiz_sol = 0;
+uint16_t hiz_sag = 0;
+uint16_t ks [] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const uint16_t ks_say = 24;
 const double hssytS[] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95};
+uint16_t sayac1 = 0;
 bool afk_modu = true;
-byte sayac1 = 0;
  uint8_t min_aralik = 5;
  uint16_t kacma_suresi = 80;
 bool mod_sag = false;
-
 uint16_t guncelleme_ms_f = 25; //makine hızı için fabrika ayarı
-byte test_izin_f = 1; //test modu için fabrika ayarı
-byte oto_mod_f = 0; //sensör modu
+int test_izin_f = 1; //test modu için fabrika ayarı
+int oto_mod_f = 0; //sensör modu
  uint8_t min_aralik_f = 5;
  uint16_t kacma_suresi_f = 80;
  bool afk_modu_f = true;
@@ -48,8 +47,6 @@ pinMode(a1, OUTPUT);
 pinMode(a2, OUTPUT);
 pinMode(b1, OUTPUT);
 pinMode(b2, OUTPUT);
-hiz = 255;
-dur();
 Serial.println("\n");
 yavas_yaz("____________________");
 yavas_yaz("Ayarlar Yukleniyor...");
@@ -62,16 +59,16 @@ void loop ()
 {
   if(Serial.available())
   {
-    char veri = Serial.read();
-    bt_sor(veri);      
+    bt_sor(Serial.read());      
   } 
+
 }
+
 void bt_sor(char veri)
 {
 if(veri == 'A')
       {
-        int16_t q = Serial.parseInt();
-        bt_ayar(q);
+        bt_ayar(Serial.parseInt());
       }
   else
   {
@@ -116,7 +113,7 @@ if(veri == 'A')
     }
   }
 }
-void bt_ayar(byte w)
+void bt_ayar(uint16_t w)
 {
           if(w < 256){hiz = w; hiz_sag = hiz; hiz_sol = hiz_sag; geri_bildiri(hiz_sol,hiz_sag);}
           else if(w == 260){ayar_al(w,10);}//1 1
@@ -143,18 +140,17 @@ void bt_ayar(byte w)
           else if(w == 299){ayar_sifirla();} // 5 1
           else if(w == 300){kart_resetle();} // 6 1
 }
-void geri_bildiri(byte l,byte r)
+void geri_bildiri(uint16_t l,uint16_t r)
 {
   Serial.print("*Y" + String(l) + "*");
   Serial.print("*Z" + String(r) + "*");
-  test("\n");
 }
-void geri_bildiri2(byte p)
+void geri_bildiri2(uint16_t p)
 {
   Serial.print("*C" + String(p) + "*");
   test("\n");
 }
-void kres(byte a)
+void kres(uint16_t a)
 {
   for(int y=0; y<ks_say; y++)
   {
@@ -221,7 +217,7 @@ void ayar_yukle()
 {
   guncelleme_ms = EEPROM.read(guncelleme_ms_adr);
   yavas_yaz("makine yenileme(ms) = "); Serial.print(guncelleme_ms);
-  byte e2 = EEPROM.read(hassasiyet_adr);
+  uint16_t e2 = EEPROM.read(hassasiyet_adr);
   for(int y=1;y<10;y++)
   {
     if(y == e2){hassasiyet = hssytS[y]; yavas_yaz("donus hassasiyeti = "); Serial.print(hassasiyet);}
@@ -288,7 +284,6 @@ return m;
 
 void dur()
 {
-  test("dur");
   hiz_sol = 0; 
   hiz_sag = 0;
   digitalWrite(a1,LOW);
@@ -299,7 +294,6 @@ void dur()
 } 
 void ileri()
 {
-  test("ileri");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol;
   analogWrite(a1,hiz_sag);
@@ -310,7 +304,6 @@ void ileri()
 }
 void geri()
 {
-  test("geri");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol;
   analogWrite(a1,0);
@@ -321,7 +314,6 @@ void geri()
 }
 void ileri_sol()
 {
-  test("ileri_sol");
   hiz_sag = hiz; 
   hiz_sol = hiz_sag*hassasiyet; 
   analogWrite(a1,hiz_sag);
@@ -332,7 +324,6 @@ void ileri_sol()
 }
 void ileri_sag()
 {
-  test("ileri_sag");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol*hassasiyet;
   analogWrite(a1,hiz_sag);
@@ -343,7 +334,6 @@ void ileri_sag()
 }
 void sag()
 {
-  test("sag");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol;
   analogWrite(a1,hiz_sag);
@@ -354,7 +344,6 @@ void sag()
 }
 void sol()
 {
-  test("sol");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol;
   analogWrite(a1,0);
@@ -365,7 +354,6 @@ void sol()
 }
 void geri_sol()
 {
-  test("geri_sol");
   hiz_sag = hiz; 
   hiz_sol = hiz_sag*hassasiyet;
   analogWrite(a1,0);
@@ -376,7 +364,6 @@ void geri_sol()
 }
 void geri_sag()
 {
-  test("geri_sag");
   hiz_sol = hiz; 
   hiz_sag = hiz_sol*hassasiyet;
   analogWrite(a1,0);
