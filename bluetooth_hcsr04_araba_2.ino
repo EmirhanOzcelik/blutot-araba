@@ -49,8 +49,6 @@ pinMode(a2, OUTPUT);
 pinMode(b1, OUTPUT);
 pinMode(b2, OUTPUT);
 hiz = 255;
-ileri();
-delay(3000);
 dur();
 Serial.println("\n");
 yavas_yaz("____________________");
@@ -62,33 +60,16 @@ Serial.println("\n");
 }
 void loop () 
 {
-  if(Serial.available() && oto_mod == 0)
+  if(Serial.available())
   {
     afk_sayac = 0;
     if(!baglanti){baglanti = true; Serial.println("\nhosgeldiniz\n");}
     else
     {
-    volatile char veri = Serial.read();
+    char veri = Serial.read();
     bt_sor(veri);      
     }
   } 
-  else if(oto_mod == 1)
-  {
-    if(Serial.available())
-    {
-      if(Serial.read() == 'A')
-      {
-        uint16_t g = Serial.parseInt();
-        bt_ayar(g);
-      }
-    }
-    else{oto_surus();}
-  }
-  else if(oto_mod == 0)
-  {
-    afk_mod_kontrol();
-  }
-
 }
 void bt_sor(char veri)
 {
