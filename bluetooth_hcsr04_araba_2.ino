@@ -62,13 +62,8 @@ void loop ()
 {
   if(Serial.available())
   {
-    afk_sayac = 0;
-    if(!baglanti){baglanti = true; Serial.println("\nhosgeldiniz\n");}
-    else
-    {
     char veri = Serial.read();
     bt_sor(veri);      
-    }
   } 
 }
 void bt_sor(char veri)
