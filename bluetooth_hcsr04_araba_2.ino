@@ -27,6 +27,7 @@ byte ks [] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 const byte ks_say = 24;
 const double hssytS[] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95};
 bool afk_modu = true;
+byte sayac1 = 0;
  uint8_t min_aralik = 5;
  uint16_t kacma_suresi = 80;
 bool mod_sag = false;
